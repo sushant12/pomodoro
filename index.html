@@ -5,14 +5,40 @@
   <link rel="stylesheet" type="text/css" href="./style.css">
   <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.3.5/dist/alpine.min.js" defer></script>
 </head>
-<body>
-<div id="pomodoro-body" x-data="data()">
+<body x-data="data()">
+<div id="pomodoro-body">
   <div id="pomodoro-timer" x-text="formatTimer(currentTime)"></div>
   <div id="pomodoro-btns">
     <button id="start-timer" @click="start()">Start</button>
     <button id="stop-timer" @click="stop()">Stop</button>
     <button id="reset-timer" @click="reset()">Reset</button>
   </div>
+</div>
+<div id="stats">
+  <table>
+    <thead>
+        <tr>
+            <th>Date</th>
+
+            <th>Total Focus Time</th>
+
+            <th>Total Short Break</th>
+
+            <th>Total Long Break</th>
+        </tr>
+    </thead>
+    <tbody>
+      <template x-for="[id, value] in Object.entries(newStat)">
+        <tr>
+          <td x-text="id"></td>
+          <td x-text="value.totalFocus"></td>
+          <td x-text="value.totalShortBreak"></td>
+          <td x-text="value.totalLongBreak"></td>
+        </tr>
+      </template>
+    </tbody>
+  </table>
+
 </div>
 <script type="text/javascript">
   function data() {
@@ -26,6 +52,13 @@
       isShortBreak: false,
       isLongBreak: false,
       totalPomodoro: 0,
+      currentDate: new Date().toLocaleDateString(),
+      newStat: JSON.parse(localStorage.getItem("pomodoro")),
+      stats: {
+        totalFocus: 0,
+        totalShortBreak: 0,
+        totalLongBreak: 0
+      },
       start() {
         this.timer = setInterval(() => {
           if(this.currentTime > 0){
@@ -34,16 +67,19 @@
             this.stop();
             playAlarm();
             if(this.isLongBreak) {
+              this.stats.totalLongBreak++;
               this.isPomodoro = true;
               this.isLongBreak = false;
               document.body.style.backgroundColor = "#ec5d51";
               this.currentTime = this.pomodoro;
             } else if(this.isPomodoro && this.totalPomodoro == 4) {
+              this.stats.totalFocus++;
               this.isPomodoro = false;
               this.isLongBreak = true;
               document.body.style.backgroundColor = "turquoise";
               this.currentTime = this.longBreak;
             } else if(this.isPomodoro) {
+              this.stats.totalFocus++;
               this.totalPomodoro++;
               this.isPomodoro = false;
               document.body.style.backgroundColor = "turquoise";
@@ -56,11 +92,14 @@
                 this.currentTime = this.shortBreak;
               }
             } else if(this.isShortBreak){
+              this.stats.totalShortBreak++;
               this.isPomodoro = true;
               this.isShortBreak = false;
               document.body.style.backgroundColor = "#ec5d51";
               this.currentTime = this.pomodoro;
             }
+            localStorage.setItem("pomodoro", JSON.stringify({[this.currentDate]: this.stats}))
+            this.newStat = JSON.parse(localStorage.getItem("pomodoro"))
           }
         }, 1000)
       },
@@ -91,8 +130,6 @@
     const alarm = new Audio('./alarm.mp3');
     alarm.play();
   }
-
-
 </script>
 </body>
 </html>
