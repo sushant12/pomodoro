@@ -18,10 +18,10 @@
   function data() {
     return {
       timer: "",
-      pomodoro: 3,
-      shortBreak: 1,
-      longBreak: 2,
-      currentTime: 3,
+      pomodoro: 25*60,
+      shortBreak: 5*60,
+      longBreak: 15*60,
+      currentTime: 25*60,
       isPomodoro: true,
       isShortBreak: false,
       isLongBreak: false,
@@ -32,6 +32,7 @@
             this.currentTime--;
           } else {
             this.stop();
+            playAlarm();
             if(this.isLongBreak) {
               this.isPomodoro = true;
               this.isLongBreak = false;
@@ -66,7 +67,13 @@
       stop() { clearInterval(this.timer); },
       reset() {
         clearInterval(this.timer);
-        this.currentTime = this.pomodoro;
+        if(this.isPomodoro) {
+          this.currentTime = this.pomodoro;
+        } else if(this.isShortBreak) {
+          this.currentTime = this.shortBreak;
+        } else if(this.isLongBreak) {
+          this.currentTime = this.longBreak;
+        }
       }
     }
   }
@@ -78,6 +85,11 @@
     if (minutesLeft < 10) { minutesLeft = "0" + minutesLeft }
     document.title = `(${minutesLeft}:${secondsLeft})`
     return `${minutesLeft}:${secondsLeft}`
+  }
+
+  function playAlarm() {
+    const alarm = new Audio('./alarm.mp3');
+    alarm.play();
   }
 
 
