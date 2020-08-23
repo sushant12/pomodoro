@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <link rel="stylesheet" type="text/css" href="./style.css">
+  <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.3.5/dist/alpine.min.js" defer></script>
+</head>
+<body>
+<div id="pomodoro-body" x-data="data()">
+  <div id="pomodoro-timer" x-text="formatTimer(currentTime)"></div>
+  <div id="pomodoro-btns">
+    <button id="start-timer" @click="start()">Start</button>
+    <button id="stop-timer" @click="stop()">Stop</button>
+    <button id="reset-timer" @click="reset()">Reset</button>
+  </div>
+</div>
+<script type="text/javascript">
+  function data() {
+    return {
+      timer: "",
+      pomodoro: 3,
+      shortBreak: 1,
+      longBreak: 2,
+      currentTime: 3,
+      isPomodoro: true,
+      isShortBreak: false,
+      isLongBreak: false,
+      totalPomodoro: 0,
+      start() {
+        this.timer = setInterval(() => {
+          if(this.currentTime > 0){
+            this.currentTime--;
+          } else {
+            this.stop();
+            if(this.isLongBreak) {
+              this.isPomodoro = true;
+              this.isLongBreak = false;
+              document.body.style.backgroundColor = "#ec5d51";
+              this.currentTime = this.pomodoro;
+            } else if(this.isPomodoro && this.totalPomodoro == 4) {
+              this.isPomodoro = false;
+              this.isLongBreak = true;
+              document.body.style.backgroundColor = "turquoise";
+              this.currentTime = this.longBreak;
+            } else if(this.isPomodoro) {
+              this.totalPomodoro++;
+              this.isPomodoro = false;
+              document.body.style.backgroundColor = "turquoise";
+              if(this.totalPomodoro == 4) {
+                this.isLongBreak = true;
+                this.currentTime = this.longBreak;
+                this.totalPomodoro = 0;
+              }else {
+                this.isShortBreak = true;
+                this.currentTime = this.shortBreak;
+              }
+            } else if(this.isShortBreak){
+              this.isPomodoro = true;
+              this.isShortBreak = false;
+              document.body.style.backgroundColor = "#ec5d51";
+              this.currentTime = this.pomodoro;
+            }
+          }
+        }, 1000)
+      },
+      stop() { clearInterval(this.timer); },
+      reset() {
+        clearInterval(this.timer);
+        this.currentTime = this.pomodoro;
+      }
+    }
+  }
+
+  function formatTimer(seconds) {
+    let secondsLeft = seconds % 60,
+        minutesLeft = parseInt(seconds / 60);
+    if (secondsLeft < 10) { secondsLeft = "0" + secondsLeft }
+    if (minutesLeft < 10) { minutesLeft = "0" + minutesLeft }
+    document.title = `(${minutesLeft}:${secondsLeft})`
+    return `${minutesLeft}:${secondsLeft}`
+  }
+
+
+</script>
+</body>
+</html>
